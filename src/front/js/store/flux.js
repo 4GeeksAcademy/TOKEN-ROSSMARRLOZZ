@@ -2,6 +2,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
+			user: null, 
+            token: null,
 			demo: [
 				{
 					title: "FIRST",
@@ -46,6 +48,30 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
+			},
+			
+			Login: async (email, password) => {
+				const fetchToken = {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({ email, password })
+				};
+			
+				try {
+					const response = await fetch("https://scary-wand-v6p499j44g69cp7jq-3001.app.github.dev/api/token", fetchToken);
+					if (response.status === 200) {
+						const data = await response.json(); 
+						return data; 
+					} else {
+						const errorData = await response.json();
+						throw new Error(errorData.msg || "Network response was not ok");
+					}
+				} catch (error) {
+					console.error("Error during login:", error);
+					throw error; 
+				}
 			}
 		}
 	};
