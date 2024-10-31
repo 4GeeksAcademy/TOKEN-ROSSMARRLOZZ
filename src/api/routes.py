@@ -1,29 +1,75 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-from flask import Flask, request, jsonify, url_for, Blueprint
+from flask import Flask, request, jsonify, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 
 api = Blueprint('api', __name__)
 
+# This will store the revoked tokens
+delete_tokens = set()  # Use a set to store revoked token IDs (jti)
+
+def user_exists(email):
+    user = User.query.filter_by(email=email).first() 
+    return user is not None
+
+def create_user(email, password):
+    new_user = User(email=email)
+    new_user.set_password(password) 
+    db.session.add(new_user)  
+    db.session.commit() 
+
 # Allow CORS requests to this API
-CORS(api)
+CORS(api, origins=["https://scary-wand-v6p499j44g69cp7jq-3000.app.github.dev"])
+
 @api.route("/hello", methods=["GET"])
 def hello():
     return jsonify({"message": "Hello, World!"}), 200
 
 # Create a route to authenticate your users and return JWTs. 
-# create_access_token() function is used to actually generate the JWT.
 @api.route("/token", methods=["POST"])
 def create_token():
     email = request.json.get("email", None)
     password = request.json.get("password", None)
-    if email != "test@example.com" or password != "test":
+    
+    if not email or not password:
+        return jsonify({"msg": "Email and password are required"}), 400
+
+    # Busca el usuario por el correo electrónico
+    user = User.query.filter_by(email=email).first()
+
+    # Verifica si el usuario existe y si la contraseña es correcta
+    if user is None or not user.check_password(password):
         return jsonify({"msg": "Bad username or password"}), 401
 
+    # Crea el token JWT
     access_token = create_access_token(identity=email)
-    return jsonify(access_token=access_token)
+    return jsonify(access_token=access_token), 200
+
+@api.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    delete_tokens.add(jti)
+    return jsonify({"msg": "Logout successful"}), 200
+
+@api.route("/signup", methods=["POST"])
+def signup():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+
+    if not email or not password:
+        return jsonify({"msg": "Email and password are required"}), 400
+
+    if user_exists(email):  
+        return jsonify({"msg": "El usauario ya existe"}), 400
+
+    try:
+        create_user(email, password)  
+        return jsonify({"msg": "Usuario registrado exitosamente"}), 201
+    except Exception as e:
+        print(f"Error creating user: {e}") 
+        return jsonify({"msg": "Internal server error"}), 500

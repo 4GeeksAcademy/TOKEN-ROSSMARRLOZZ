@@ -5,3 +5,33 @@
     one more css for each page that will contain the selected used 
     on that page only (the ones not reused in other pages).
 */
+body{
+    background-image: url(https://i.pinimg.com/originals/75/51/41/755141911d7a45be7e7036044d019949.gif);
+    background-repeat: no-repeat;
+    background-size: cover;
+    flex: 1; 
+}
+
+h1, h2{
+    color: white;
+}
+
+.btn-spacing {
+    margin-right: 10px; 
+}
+
+.estiloTexto{
+    color: white;
+}
+
+.estiloTextoSignup{
+    color:white
+
+}
+
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}

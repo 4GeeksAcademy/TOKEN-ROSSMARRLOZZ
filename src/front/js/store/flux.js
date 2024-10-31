@@ -3,7 +3,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			message: null,
 			user: null, 
-            token: null,
+            token: sessionStorage.getItem('token') || null, 
+			isAuthenticated: !!sessionStorage.getItem('token'), 
+			Signup: null,
 			demo: [
 				{
 					title: "FIRST",
@@ -18,7 +20,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			]
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
+			// Use getActions to call a function within a function
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
@@ -63,6 +65,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const response = await fetch("https://scary-wand-v6p499j44g69cp7jq-3001.app.github.dev/api/token", fetchToken);
 					if (response.status === 200) {
 						const data = await response.json(); 
+						sessionStorage.setItem('token', data.access_token); 
+						setStore({ token: data.access_token, isAuthenticated: true });
 						return data; 
 					} else {
 						const errorData = await response.json();
@@ -72,9 +76,56 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error during login:", error);
 					throw error; 
 				}
-			}
+			},
+
+			Logout: async () => {
+				const token = sessionStorage.getItem('token');
+				const fetchLogout = {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${token}`
+					}
+				};
+			
+				try {
+					const response = await fetch("https://scary-wand-v6p499j44g69cp7jq-3001.app.github.dev/api/logout", fetchLogout);
+					if (response.status === 200) {
+						sessionStorage.removeItem('token');
+						setStore({ token: null, isAuthenticated: false });
+					} else {
+						const errorData = await response.json(); 
+						throw new Error(errorData.msg || "Error al cerrar sesión");
+					}
+				} catch (error) {
+					console.error("Error durante el logout:", error);
+				}
+			},
+
+			Signup: async (email, password) => {
+				const fetchSignup = {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({ email, password })
+				};
+			
+				try {
+					const response = await fetch("https://scary-wand-v6p499j44g69cp7jq-3001.app.github.dev/api/signup", fetchSignup);
+					if (response.status === 201) {
+						const data = await response.json();
+						return data; 
+					} else {
+						const errorData = await response.json();
+						throw new Error(errorData.msg || "Failed to register");
+					}
+				} catch (error) {
+					console.error("Error during registration:", error);
+					throw error; 
+				}
+			}	
 		}
 	};
 };
-
 export default getState;

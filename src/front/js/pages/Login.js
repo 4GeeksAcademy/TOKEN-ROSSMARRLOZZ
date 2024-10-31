@@ -5,7 +5,7 @@ import "../../styles/home.css";
 import { useNavigate } from "react-router-dom";
 
 
-export const Login = () => {
+export const Login = ({ onLogin }) => {
 	const { actions } = useContext(Context);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -18,6 +18,7 @@ export const Login = () => {
 			const result = await actions.Login(email, password);
 			if (result && result.access_token) {  
 				sessionStorage.setItem('token', result.access_token); 
+        onLogin(); 
 				navigate("/Private"); 
 			} else {
 				setError("Login failed. Please check your credentials."); 
@@ -54,32 +55,32 @@ export const Login = () => {
   // };
 
   return (
-    <Container>
+    <Container className="estiloTexto">
       <Form onSubmit={handleClick}> 
         <Form.Group className="mb-3" controlId="formBasicEmail">
-          <Form.Label>Email</Form.Label>
+          <Form.Label>Por favor, escribe tu email</Form.Label>
           <Form.Control 
             type="email" 
             placeholder="Enter email" 
             value={email}
-            onChange={(e) => setEmail(e.target.value)} // Actualizar estado al escribir
+            onChange={(e) => setEmail(e.target.value)} 
           />
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="formBasicPassword">
-          <Form.Label>Password</Form.Label>
+          <Form.Label>Por favor, escribe tu contraseña</Form.Label>
           <Form.Control 
             type="password" 
             placeholder="Password" 
             value={password}
-            onChange={(e) => setPassword(e.target.value)} // Actualizar estado al escribir
+            onChange={(e) => setPassword(e.target.value)} 
           />
         </Form.Group>
 
-        {error && <div className="text-danger">{error}</div>} {/* Mostrar errores si existen */}
+        {error && <div className="text-danger">{error}</div>} 
 
         <Button variant="primary" type="submit">
-          Submit
+          Pulsa aquí para iniciar sesión
         </Button>
       </Form>
     </Container>
