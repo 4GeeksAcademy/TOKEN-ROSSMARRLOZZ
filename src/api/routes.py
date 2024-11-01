@@ -36,14 +36,14 @@ def create_token():
     password = request.json.get("password", None)
     
     if not email or not password:
-        return jsonify({"msg": "Email and password are required"}), 400
+        return jsonify({"msg": "Se requieren correo electrónico y contraseña"}), 400
 
     # Busca el usuario por el correo electrónico
     user = User.query.filter_by(email=email).first()
 
     # Verifica si el usuario existe y si la contraseña es correcta
     if user is None or not user.check_password(password):
-        return jsonify({"msg": "Bad username or password"}), 401
+        return jsonify({"msg": "Nombre de usuario o contraseña incorrectos"}), 401
 
     # Crea el token JWT
     access_token = create_access_token(identity=email)
@@ -54,7 +54,7 @@ def create_token():
 def logout():
     jti = get_jwt()["jti"]
     delete_tokens.add(jti)
-    return jsonify({"msg": "Logout successful"}), 200
+    return jsonify({"msg": "Cierre de sesión exitoso"}), 200
 
 @api.route("/signup", methods=["POST"])
 def signup():
@@ -62,7 +62,7 @@ def signup():
     password = request.json.get("password", None)
 
     if not email or not password:
-        return jsonify({"msg": "Email and password are required"}), 400
+        return jsonify({"msg": "Se requieren correo electrónico y contraseña"}), 400
 
     if user_exists(email):  
         return jsonify({"msg": "El usauario ya existe"}), 400
@@ -72,4 +72,9 @@ def signup():
         return jsonify({"msg": "Usuario registrado exitosamente"}), 201
     except Exception as e:
         print(f"Error creating user: {e}") 
-        return jsonify({"msg": "Internal server error"}), 500
+        return jsonify({"msg": "Error Interno del Servidor"}), 500
+
+@api.route('/verify-token', methods=['GET'])
+@jwt_required()
+def verify_token():
+    return jsonify({"msg": "Token es válido"}), 200

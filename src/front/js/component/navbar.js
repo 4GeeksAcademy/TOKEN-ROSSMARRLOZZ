@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Context } from "../store/appContext";
+import {Container} from 'react-bootstrap';
+
 
 const Navbar = ({ isAuthenticated, onLogout }) => {
   const { actions } = useContext(Context);
@@ -32,6 +34,7 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
   };
 
   return (
+    
     <nav className="navbar navbar-dark bg-dark">
       <div className="container">
         <Link to="/">

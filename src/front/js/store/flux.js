@@ -124,8 +124,39 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error during registration:", error);
 					throw error; 
 				}
-			}	
-		}
+			}, 
+
+			checkTokenValidity: async () => {
+				const token = sessionStorage.getItem('token');
+				if (!token) {
+					setStore({ isAuthenticated: false });
+					return;
+				}
+			
+				const fetchVerify = {
+					method: "GET",
+					headers: {
+						"Authorization": `Bearer ${token}`
+					}
+				};
+			
+				try {
+					const response = await fetch("https://scary-wand-v6p499j44g69cp7jq-3001.app.github.dev/api/verify-token", fetchVerify);
+					if (response.status === 200) {
+						setStore({ isAuthenticated: true });
+					} else {
+						sessionStorage.removeItem('token');
+						setStore({ token: null, isAuthenticated: false });
+					}
+				} catch (error) {
+					console.error("Error verifying token:", error);
+					sessionStorage.removeItem('token');
+					setStore({ token: null, isAuthenticated: false });
+				}
+			},
+					}
 	};
 };
+
+
 export default getState;
